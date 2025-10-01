@@ -1,0 +1,24 @@
+2025-10-01 15:24:08,856 - INFO - ==================================================
+2025-10-01 15:24:08,859 - INFO - STARTING PROJECT SCRAPING SCRIPT
+2025-10-01 15:24:08,862 - INFO - ==================================================
+2025-10-01 15:24:08,866 - INFO - Total of 139 projects to be processed.
+2025-10-01 15:24:08,869 - INFO - Processing project 1/139: A reafirmação dos Direitos Fundamentais Sociais sob o olhar ético do Estado Democrático de Direito Agroambiental brasileiro
+2025-10-01 15:24:09,282 - INFO -   [✅ SUCCESS] Successfully extracted data from https://sucupira-legado.capes.gov.br/sucupira/public/consultas/coleta/envioColeta/detalhesDados/viewProjetoPesquisa.xhtml?popup=true&idProjeto=9570471
+2025-10-01 15:24:09,795 - INFO - Processing project 2/139: “A teoria finalista mitigada enquanto mecanismo judicial de inclusão e efetividade do direito fundamental da proteção às relações de consumo”
+2025-10-01 15:24:10,126 - INFO -   [✅ SUCCESS] Successfully extracted data from https://sucupira-legado.capes.gov.br/sucupira/public/consultas/coleta/envioColeta/detalhesDados/viewProjetoPesquisa.xhtml?popup=true&idProjeto=9570472
+2025-10-01 15:24:10,638 - INFO - Processing project 3/139: A VIRADA TECNOLÓGICA NO SISTEMA MULTIPORTAS DE SOLUÇÃO DE CONFLITOS E SEU IMPACTO NA EFETIVAÇÃO DOS DIREITOS FUNDAMENTAIS
+2025-10-01 15:24:10,980 - INFO -   [✅ SUCCESS] Successfully extracted data from https://sucupira-legado.capes.gov.br/sucupira/public/consultas/coleta/envioColeta/detalhesDados/viewProjetoPesquisa.xhtml?popup=true&idProjeto=9570473
+2025-10-01 15:24:11,501 - INFO - Processing project 4/139: Autonomia do Direito Privado, Direitos Fundamentais e Regulação de Institutos de Direito Privado
+2025-10-01 15:24:11,915 - INFO -   [✅ SUCCESS] Successfully extracted data from https://sucupira-legado.capes.gov.br/sucupira/public/consultas/coleta/envioColeta/detalhesDados/viewProjetoPesquisa.xhtml?popup=true&idProjeto=9570474
+2025-10-01 15:24:12,426 - INFO - Processing project 5/139: Controle jurisdicional das políticas públicas para a efetivação dos Direitos Fundamentais
+2025-10-01 15:24:12,953 - INFO -   [✅ SUCCESS] Successfully extracted data from https://sucupira-legado.capes.gov.br/sucupira/public/consultas/coleta/envioColeta/detalhesDados/viewProjetoPesquisa.xhtml?popup=true&idProjeto=9570475
+2025-10-01 15:24:13,470 - INFO - Processing project 6/139: Democracia, Hermenêutica e Processo
+2025-10-01 15:24:15,194 - INFO -   [✅ SUCCESS] Successfully extracted data from https://sucupira-legado.capes.gov.br/sucupira/public/consultas/coleta/envioColeta/detalhesDados/viewProjetoPesquisa.xhtml?popup=true&idProjeto=9570476
+2025-10-01 15:39:18,344 - INFO - ====== WebDriver manager ======
+2025-10-01 15:39:19,190 - INFO - Get LATEST geckodriver version for None firefox
+2025-10-01 15:39:19,391 - INFO - Getting latest mozilla release info for v0.36.0
+2025-10-01 15:39:19,718 - INFO - About to download new driver from https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-win64.zip
+2025-10-01 15:39:20,544 - INFO - Driver downloading response is 200
+2025-10-01 15:39:22,758 - INFO - Get LATEST geckodriver version for None firefox
+2025-10-01 15:39:23,586 - INFO - Get LATEST geckodriver version for None firefox
+2025-10-01 15:39:24,460 - INFO - Driver has been saved in cache [C:\Users\joaoa\.wdm\drivers\geckodriver\win64\v0.36.0]
