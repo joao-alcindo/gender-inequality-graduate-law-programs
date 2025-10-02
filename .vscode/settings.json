@@ -1,5 +1,11 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:conda",
     "python-envs.defaultPackageManager": "ms-python.python:conda",
-    "python-envs.pythonProjects": []
+    "python-envs.pythonProjects": [],
+    "r.rterm.windows": "C:\\Program Files\\R\\R-4.1.1\\bin\\x64\\R.exe",
+    "r.rpath.windows": "C:\\Program Files\\R\\R-4.1.1\\bin\\x64\\R.exe",
+    "r.bracketedPaste": true,
+    "r.plot.useHttpgd": true,
+    "r.sessionWatcher": true,
+    "r.lsp.enabled": true
 }

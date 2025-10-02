@@ -1,0 +1,244 @@
+---
+title: "Gender Inequality Analysis in Graduate Law Programs"
+author: "Joao Alcindo"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: united
+    highlight: tango
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 10,
+  fig.height = 6
+)
+
+# Load required libraries
+library(tidyverse)
+library(jsonlite)
+library(scales)
+library(viridis)
+library(knitr)
+library(plotly)
+```
+
+# Introduction
+
+This document analyzes gender inequality in Brazilian graduate law programs using data collected from CAPES. The analysis focuses on examining gender representation among professors and students.
+
+# Data Loading and Preprocessing
+
+
+```{r load_data}
+# Load the data from the JSON file
+data_path <- "./data/complete_data_with_genders.json"
+raw_data <- fromJSON(data_path)
+
+
+# get the hei abbreviation inside the parenteses and make it uppercase
+
+raw_data <- raw_data %>%
+    mutate(HEI_Abbreviation = toupper(str_extract(HEI_Abbreviation, "(?<=\\().+?(?=\\))")))
+
+
+# Professosrs level data
+
+data_professors <- raw_data %>% select(-Projects) %>%
+    unnest(Professors)
+
+# projects members level data
+data_projects_members <- raw_data %>% select(-Professors) %>%
+    unnest(Projects) %>%
+    unnest(Members) 
+
+```
+
+# Professors Analysis
+
+```{r professors_analysis}
+
+
+## Improved Professor Gender Percentage Calculation and Visualization
+
+# 1. Calculation: Aggregate data with filtering for robustness
+professor_gender_percentage <- data_professors %>%
+    # Filter out professors with missing or blank gender
+    filter(!is.na(Name_Gender) & Name_Gender != "") %>%
+    # Group by both Program Code AND HEI Abbreviation for better identification
+    group_by(SEARCHED_PROGRAM_CODE, HEI_Abbreviation) %>%
+    summarise(
+        total_professors = n(),
+        total_women = sum(Name_Gender == "FEMALE"),
+        .groups = 'drop' # Drop grouping after summarizing
+    ) %>%
+    mutate(
+        percentage_women = (total_women / total_professors) * 100
+    ) %>%
+    # Optional: Filter out small programs (e.g., < 5 professors) for cleaner stats
+    filter(total_professors >= 5)
+
+
+# 2. Visualization: Use ggplot2 for a modern and informative histogram
+p_histogram <- professor_gender_percentage %>%
+    ggplot(aes(x = percentage_women)) +
+    # Create the histogram with specified bin width (e.g., 5 percentage points)
+    geom_histogram(binwidth = 5, fill = "#1F78B4", color = "white", alpha = 0.8) +
+    # Add a vertical line at 50% for visual reference (gender parity)
+    geom_vline(xintercept = 50, linetype = "dashed", color = "red", size = 1) +
+    # Add labels for title and axes
+    labs(
+        title = "Distribution of Women Professor Percentage Across Graduate Law Programs",
+        subtitle = "Programs with less than 5 professors excluded. Red line indicates 50% parity.",
+        x = "Percentage of Women Professors (%)",
+        y = "Number of Programs"
+    ) +
+    # Customize the x-axis to show percentages clearly
+    scale_x_continuous(labels = scales::percent_format(scale = 1), breaks = seq(0, 100, 10)) +
+    theme_minimal(base_size = 14) +
+    # Further refine the theme appearance
+    theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.grid.minor.x = element_blank()
+    )
+
+p_histogram
+```
+
+
+```{r, professors_2}
+library(dplyr)
+library(ggplot2)
+library(forcats) # Used for fct_reorder in ggplot (already implied by tidyverse load)
+
+# 1. Aggregation: Count and calculate the percentage of women per Program (or Institution)
+gender_diversity_per_program <- data_professors %>%
+    # Filter out professors with missing or blank gender
+    filter(!is.na(Name_Gender) & Name_Gender != "") %>%
+    # Group by Program Code and HEI Abbreviation
+    group_by(SEARCHED_PROGRAM_CODE, HEI_Abbreviation) %>% 
+    # Calculate summary statistics for each program
+    summarise(
+        total_professors = n(), # Total number of professors
+        total_women = sum(Name_Gender == "FEMALE"), # Total number of women
+        .groups = 'drop' # Drop grouping after summarising
+    ) %>%
+    mutate(
+        percentage_women = (total_women / total_professors) * 100, # Calculate % women
+        # Calculate the 'Distance from Equilibrium' (50%), useful for classifying diversity
+        distance_from_50 = abs(percentage_women - 50)
+    ) %>%
+    # Filter out small programs (less than 20 professors) for greater robustness
+    filter(total_professors >= 20) 
+
+# 2. Visualization: Scatter Plot
+p_diversity <- gender_diversity_per_program %>%
+    # Order the programs by the distance from equilibrium (closest to 50% on top)
+    arrange(distance_from_50) %>%
+    head(30) %>% # Select the 30 most diverse programs to plot
+    # Create a clear label combining Institution abbreviation and Program code
+    mutate(Label = paste(HEI_Abbreviation, " (", SEARCHED_PROGRAM_CODE, ")")) %>%
+    # Reorder the y-axis label based on the percentage of women for better visual flow
+    mutate(Label = forcats::fct_reorder(Label, percentage_women)) %>%
+
+    ggplot(aes(x = percentage_women, 
+                y = Label, 
+                size = total_professors, 
+                color = distance_from_50)) +
+    # Create the scatter points
+    geom_point(alpha = 0.7) +
+    # Use a Viridis color scale. 'direction = -1' means better colors are closer to 50%
+    scale_color_viridis_c(direction = -1, name = "Distance from 50% (Equilibrium)") +
+    # Add a dashed red vertical line at 50% for the parity benchmark
+    geom_vline(xintercept = 50, linetype = "dashed", color = "red") + 
+    # Add titles and labels
+    labs(
+        title = "Most Diverse Programs (Closest to 50% Women)",
+        x = "Percentage of Women (%)",
+        y = "Program (Institution)",
+        size = "Total Professors"
+    ) +
+    theme_minimal() # Use a clean theme
+
+# Display the plot
+p_diversity
+
+```
+
+
+
+
+```{r professors_4, echo=FALSE}
+# Note: The 'echo=FALSE' setting in the chunk header suppresses the code display
+# in the final R Markdown output, showing only the plot.
+
+# Load the necessary packages for mapping:
+library(geobr) # Package to download official Brazilian spatial data
+library(sf)    # Package for handling simple features (spatial data)
+library(dplyr) # For data manipulation (already loaded, but good to ensure)
+library(ggplot2) # For plotting (already loaded, but good to ensure)
+
+
+# ----------------------------------------------------------------------
+# STEP 1: AGGREGATE DATA BY STATE (Overall)
+# ----------------------------------------------------------------------
+professor_gender_state_overall <- data_professors %>%
+    # Filter out professors with missing or blank gender
+    filter(!is.na(Name_Gender) & Name_Gender != "") %>%
+    # Group the data by the state's UF (Federation Unit)
+    group_by(State_UF) %>%
+    # Calculate summary statistics for each state
+    summarise(
+        total_professors = n(), # Total number of professors in the state
+        total_women = sum(Name_Gender == "FEMALE"), # Total number of women professors
+        .groups = 'drop'
+    ) %>%
+    # Calculate the percentage of women professors
+    mutate(
+        percentage_women = (total_women / total_professors) * 100
+    )
+
+
+# ----------------------------------------------------------------------
+# STEP 2: CODE TO PLOT ON THE MAP (REQUIRES GEOGRAPHICAL PACKAGES)
+# ----------------------------------------------------------------------
+
+# 2.1 Download Brazilian state data (requires geobr)
+# Reads the shapefile for all Brazilian states for the year 2020
+br_states <- geobr::read_state(code_state = "all", year = 2020)
+
+# 2.2 Merge the analysis data with the geographical data
+# Join the professor data with the state map data.
+# 'abbrev_state' from geobr matches 'State_UF' from the law program data.
+br_map_data <- br_states %>%
+    left_join(professor_gender_state_overall, by = c("abbrev_state" = "State_UF"))
+
+# 2.3 Create the map using ggplot (geom_sf)
+map_plot <- ggplot() +
+    # Use geom_sf to plot the simple features (states)
+    geom_sf(data = br_map_data,
+            # Map the 'percentage_women' to the fill color
+            aes(fill = percentage_women,
+                # Create a custom text string for interactivity (e.g., in plotly or tooltips)
+                text = paste("State:", name_state,
+                             "<br>% Women:", round(percentage_women, 2), "%",
+                             "<br>Total Professors:", total_professors)),
+            color = "black", size = 0.1) +
+    # Add a scale from red (low percentage) through white (50% midpoint) to blue (high percentage)
+    scale_fill_gradient2(low = "red", mid = "white", high = "blue", midpoint = 50,
+                         name = "% Women\nProfessors") + # Continuous color scale
+    # Set the title for the map
+    labs(title = "Distribution of Percentage of Women Professors by State") +
+    # Use a minimal theme for a cleaner look
+    theme_minimal()
+
+# Display the map plot
+print(map_plot)
+```
