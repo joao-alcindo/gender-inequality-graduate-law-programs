@@ -242,3 +242,83 @@ map_plot <- ggplot() +
 # Display the map plot
 print(map_plot)
 ```
+
+
+```{r professors_5, echo=FALSE}
+
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+# ----------------------------------------------------------------------
+# STEP 1: DATA PRE-PROCESSING AND FILTERING
+# ----------------------------------------------------------------------
+
+# We filter for categories containing "PERMANENTE" (Permanent) to include all variations
+# (e.g., "PERMANENTE", "PERMANENTE\nCOLABORADOR").
+data_permanentes <- data_professors %>%
+    # Filter rows where the Category column contains "PERMANENTE" (case-insensitive)
+    # And remove rows with missing gender information
+    filter(grepl("PERMANENTE", Category, ignore.case = TRUE),
+           !is.na(Name_Gender) & Name_Gender != "") %>%
+    # Add a clean category column (optional)
+    mutate(Category_Clean = "PERMANENTE")
+
+# ----------------------------------------------------------------------
+# STEP 2: CALCULATE PERCENTAGE PER HEI (Institution)
+# ----------------------------------------------------------------------
+
+professor_gender_percentage_permanente <- data_permanentes %>%
+    # Group by the Higher Education Institution (HEI) code
+    group_by(SEARCHED_PROGRAM_CODE) %>%
+    summarise(
+        total_professors_permanentes = n(),
+        total_women_permanentes = sum(Name_Gender == "FEMALE"),
+        .groups = 'drop'
+    ) %>%
+    # Calculate the percentage of women
+    mutate(
+        percentage_women = (total_women_permanentes / total_professors_permanentes) * 100
+    ) %>%
+    # Filter out HEIs with very few professors (e.g., less than 5) for robustness
+    filter(total_professors_permanentes >= 5)
+
+
+# ----------------------------------------------------------------------
+# STEP 3: PLOTTING - HISTOGRAM 
+# ----------------------------------------------------------------------
+
+# 1. DEFINE THE BASE HISTOGRAM OBJECT (Step A)
+histograma_base <- ggplot(professor_gender_percentage_permanente, aes(x = percentage_women)) +
+    geom_histogram(binwidth = 5, fill = "#1F78B4", color = "white", alpha = 0.8) +
+    labs(
+        title = "Distribution of % Women among PERMANENT Professors by HEI",
+        subtitle = paste("Total HEIs Analyzed:", nrow(professor_gender_percentage_permanente)),
+        x = "Percentage of Women (%)",
+        y = "Number of Institutions (HEIs)"
+    ) +
+    scale_x_continuous(breaks = seq(0, 100, by = 10)) +
+    theme_minimal() +
+    # Add a vertical line for the overall average
+    geom_vline(aes(xintercept = mean(percentage_women, na.rm = TRUE)),
+               color = "red", linetype = "dashed", size = 1)
+
+# 2. CALCULATE MAX COUNT AND FINAL ANNOTATION (Step B)
+# We must first 'build' the base plot to get the calculated bar heights
+plot_data <- ggplot_build(histograma_base)$data[[1]]
+max_count <- max(plot_data$count)
+
+# 3. ADD ANNOTATION TO THE BASE PLOT (Step C)
+histograma_final <- histograma_base +
+    annotate("text",
+             # Adjust x position slightly past the mean for visibility
+             x = mean(professor_gender_percentage_permanente$percentage_women, na.rm = TRUE) + 15,
+             # Set y position based on the calculated maximum count
+             y = max_count * 0.9,
+             label = paste("Overall Average:", round(mean(professor_gender_percentage_permanente$percentage_women, na.rm = TRUE), 2), "%"),
+             color = "red")
+
+# Display the plot
+print(histograma_final)
+
+```
